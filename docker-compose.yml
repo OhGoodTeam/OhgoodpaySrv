@@ -1,0 +1,169 @@
+name: ohgood-stack
+services:
+  traefik:
+    image: traefik:v3.1
+    command:
+      - "--api.dashboard=false"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedByDefault=false"
+      # Entrypoints
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      # HTTP -> HTTPS 리다이렉트
+      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entryPoint.scheme=https"
+      # Let's Encrypt (TLS-ALPN)
+      - "--certificatesresolvers.le.acme.email=${TRAEFIK_EMAIL}"
+      - "--certificatesresolvers.le.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.le.acme.tlschallenge=true"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "./reverse-proxy/acme.json:/letsencrypt/acme.json"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    networks: [proxy]
+    restart: unless-stopped
+
+  # React (Vite build → static-web-server on 3000)
+  vite:
+    build:
+      context: ./vite
+    networks: [proxy]
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      # 프론트: 한 도메인 캐치올
+      - "traefik.http.routers.front.rule=Host(`${DOMAIN_HOST}`) && PathPrefix(`/`)"
+      - "traefik.http.routers.front.entrypoints=websecure"
+      - "traefik.http.routers.front.tls.certresolver=le"
+      - "traefik.http.routers.front.priority=1"
+      - "traefik.http.services.front.loadbalancer.server.port=${FRONT_PORT}"
+      # (선택) 압축 + HSTS
+      - "traefik.http.middlewares.front-compress.compress=true"
+      - "traefik.http.middlewares.front-hsts.headers.stsSeconds=31536000"
+      - "traefik.http.middlewares.front-hsts.headers.forceSTSHeader=true"
+      - "traefik.http.middlewares.front-hsts.headers.stsIncludeSubdomains=true"
+      - "traefik.http.middlewares.front-hsts.headers.stsPreload=true"
+      - "traefik.http.routers.front.middlewares=front-compress@docker,front-hsts@docker"
+    logging:
+      options: { max-size: "10m", max-file: "5" }
+
+  # Spring Boot (JDK17, 8080)
+  spring:
+    build:
+      context: ./spring
+    environment:
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILE}
+      - SPRING_DATASOURCE_URL=jdbc:mariadb://mariadb:3306/${MARIADB_DATABASE}?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=${MARIADB_USER}
+      - SPRING_DATASOURCE_PASSWORD=${MARIADB_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      - mariadb
+    networks: [proxy, backend]
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      # /api/** → Spring
+      - "traefik.http.routers.spring-api.rule=Host(`${DOMAIN_HOST}`) && PathPrefix(`${API_PREFIX}`)"
+      - "traefik.http.routers.spring-api.entrypoints=websecure"
+      - "traefik.http.routers.spring-api.tls.certresolver=le"
+      - "traefik.http.routers.spring-api.priority=100"
+      - "traefik.http.middlewares.api-strip.stripprefix.prefixes=${API_PREFIX}"
+      - "traefik.http.routers.spring-api.middlewares=api-strip@docker"
+      - "traefik.http.services.spring.loadbalancer.server.port=${SPRING_PORT}"
+
+      # /auth/** → Spring
+      - "traefik.http.routers.spring-auth.rule=Host(`${DOMAIN_HOST}`) && PathPrefix(`/auth`)"
+      - "traefik.http.routers.spring-auth.entrypoints=websecure"
+      - "traefik.http.routers.spring-auth.tls.certresolver=le"
+      - "traefik.http.routers.spring-auth.priority=100"
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1024M
+    logging:
+      options: { max-size: "10m", max-file: "5" }
+
+  # FastAPI (Python 3.13.7, 8000)
+  fastapi:
+    build:
+      context: ./fastapi
+    environment:
+      # 예) DATABASE_URL, REDIS_URL 등을 여기 주입
+      # DATABASE_URL=...
+      # REDIS_URL=redis://redis:6379/0
+      - UVICORN_WORKERS=2
+    networks: [proxy, backend]
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      # FastAPI: /ml 프리픽스 (StripPrefix)
+      - "traefik.http.routers.fastapi.rule=Host(`${DOMAIN_HOST}`) && PathPrefix(`${FASTAPI_PREFIX}`)"
+      - "traefik.http.routers.fastapi.entrypoints=websecure"
+      - "traefik.http.routers.fastapi.tls.certresolver=le"
+      - "traefik.http.routers.fastapi.priority=100"
+      - "traefik.http.middlewares.ml-strip.stripprefix.prefixes=${FASTAPI_PREFIX}"
+      - "traefik.http.routers.fastapi.middlewares=ml-strip@docker"
+      - "traefik.http.services.fastapi.loadbalancer.server.port=${FASTAPI_PORT}"
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+    logging:
+      options: { max-size: "10m", max-file: "5" }
+
+  # MariaDB 11.x (커스텀 Dockerfile)
+  mariadb:
+    build:
+      context: ./mariadb
+    environment:
+      - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
+      - MARIADB_DATABASE=${MARIADB_DATABASE}
+      - MARIADB_USER=${MARIADB_USER}
+      - MARIADB_PASSWORD=${MARIADB_PASSWORD}
+    command:
+      [
+        "--character-set-server=utf8mb4",
+        "--collation-server=utf8mb4_unicode_ci",
+        "--max-connections=150",
+      ]
+    volumes:
+      - db-data:/var/lib/mysql
+      # Dockerfile에서 init.sql을 COPY한다면 아래 라인은 불필요
+      # - ./mariadb/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks: [backend]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    logging:
+      options: { max-size: "10m", max-file: "5" }
+
+  # Redis 7.x (커스텀 Dockerfile, AOF on 권장)
+  redis:
+    build:
+      context: ./redis
+    # 비번 필요 시 redis.conf 볼륨 + requirepass 사용
+    # volumes:
+    #   - ./redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    # command: ["redis-server","/usr/local/etc/redis/redis.conf"]
+    networks: [backend]
+    restart: unless-stopped
+    volumes:
+      - redis-data:/data
+    logging:
+      options: { max-size: "10m", max-file: "5" }
+
+networks:
+  proxy: {}
+  backend: {}
+
+volumes:
+  db-data: {}
+  redis-data: {}
