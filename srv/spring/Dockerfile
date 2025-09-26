@@ -2,14 +2,14 @@
     FROM gradle:8.9-jdk17-alpine AS build
     WORKDIR /app
     # Gradle 캐시 최적화
-    COPY build.gradle settings.gradle gradlew ./
+    COPY build.gradle settings.gradle ./
     COPY gradle ./gradle
-    RUN ./gradlew --version
+    RUN gradle --version
     
     # 소스 복사 후 빌드
     COPY src ./src
     # (필요시) QueryDSL Q-클래스 생성까지 포함
-    RUN ./gradlew clean bootJar --no-daemon
+    RUN gradle clean bootJar --no-daemon
     
     # -------- 2) Runtime stage: JRE + FFmpeg --------
     FROM eclipse-temurin:17-jre-alpine

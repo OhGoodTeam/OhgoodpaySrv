@@ -4,7 +4,7 @@ services:
   vite:
     build:
       context: . # 레포 루트
-      dockerfile: ./vite/Dockerfile.nginx
+      dockerfile: ./srv/vite/Dockerfile.nginx
     ports:
       - "80:80" # HTTP로 접근
       - "443:443" # HTTPS로 접근
@@ -16,7 +16,7 @@ services:
   # ---------- Spring Boot ----------
   spring:
     build:
-      context: ./spring
+      context: ./srv/spring
     environment:
       - SPRING_PROFILES_ACTIVE=${SPRING_PROFILE}
       - SPRING_DATASOURCE_URL=jdbc:mariadb://mariadb:3306/${MARIADB_DATABASE}?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true
@@ -36,7 +36,7 @@ services:
   # ---------- FastAPI ----------
   fastapi:
     build:
-      context: ./fastapi
+      context: ./srv/fastapi
     environment:
       - UVICORN_WORKERS=2
       # - DATABASE_URL=...
@@ -52,7 +52,7 @@ services:
   # ---------- MariaDB ----------
   mariadb:
     build:
-      context: ./mariadb
+      context: ./srv/mariadb
     environment:
       - MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
       - MARIADB_DATABASE=${MARIADB_DATABASE}
@@ -80,7 +80,7 @@ services:
   # ---------- Redis ----------
   redis:
     build:
-      context: ./redis
+      context: ./srv/redis
     volumes:
       - redis-data:/data
     networks: [backend]
