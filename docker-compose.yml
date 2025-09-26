@@ -7,7 +7,8 @@ services:
       dockerfile: ./srv/vite/Dockerfile.nginx
     ports:
       - "80:80" # HTTP로 접근
-      - "443:443" # HTTPS로 접근
+    depends_on:
+      - spring
     restart: unless-stopped
     logging:
       options: { max-size: "10m", max-file: "5" }
@@ -24,7 +25,8 @@ services:
       - SPRING_DATASOURCE_PASSWORD=${MARIADB_PASSWORD}
       - JWT_SECRET=${JWT_SECRET}
     depends_on:
-      - mariadb
+      mariadb:
+        condition: service_healthy
     # (선택) 로컬 확인을 위해 포트 노출
     ports:
       - "8080:8080"
