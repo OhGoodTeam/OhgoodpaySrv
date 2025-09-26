@@ -1,16 +1,30 @@
-# 1) 빌드
+# ---------- 1) Build stage: Vite 빌드 ----------
 FROM node:20-alpine AS build
 WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-# 필요하면: ARG VITE_API_BASE_URL 등 받아서 빌드
+
+# 루트가 아닌 vite/ 폴더에 프로젝트가 있으므로 경로 명시
+COPY vite/package*.json ./vite/
+WORKDIR /app/vite
+RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
+
+# Vite 설정/환경 & 엔트리/소스/정적
+COPY vite/vite.config.* ./
+COPY vite/.env* ./
+COPY vite/index.html ./index.html
+COPY vite/src ./src
+COPY vite/public ./public
+
+# (선택) 경로 문제 디버깅: 필요한 경우 아래 열고 테스트
+# RUN test -f /app/vite/src/shared/assets/img/checkin.png || (echo "MISSING checkin.png" && ls -R /app/vite/src/shared/assets/img && exit 1)
+
 RUN npm run build
 
-# 2) 정적 서빙 (static-web-server)
-FROM ghcr.io/static-web-server/static-web-server:2
-WORKDIR /web
-COPY --from=build /app/dist /web
-EXPOSE 3000
-# --spa: SPA 라우팅 새로고침 404 방지
-CMD ["--port","3000","--root","/web","--spa"]
+# ---------- 2) Runtime: Nginx ----------
+FROM nginx:1.27-alpine
+# SPA 새로고침 404 방지, gzip 등 설정
+COPY vite/nginx.conf /etc/nginx/conf.d/default.conf
+# 빌드 산출물 배포 경로
+COPY --from=build /app/vite/dist /usr/share/nginx/html
+
+EXPOSE 80
+CMD ["nginx","-g","daemon off;"]
