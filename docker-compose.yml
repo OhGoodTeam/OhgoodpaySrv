@@ -29,7 +29,7 @@ services:
         condition: service_healthy
     # (선택) 로컬 확인을 위해 포트 노출
     ports:
-      - "8080:8080"
+      - "443:8080"
     networks: [backend]
     restart: unless-stopped
     logging:

@@ -2,7 +2,8 @@ import axios from "axios";
 import callToken from "../hook/callToken";
 
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "", // 상대 경로로 변경
+  baseURL:
+    import.meta.env.VITE_API_URL || "https://ohgoodteam.shinhanacademy.co.kr", // 직접 HTTPS로 연결
   timeout: 10000,
 
   headers: {

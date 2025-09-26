@@ -15,8 +15,8 @@
     FROM eclipse-temurin:17-jre-alpine
     WORKDIR /app
     
-    # FFmpeg & 타임존
-    RUN apk add --no-cache ffmpeg tzdata
+    # FFmpeg & 타임존 & OpenSSL
+    RUN apk add --no-cache ffmpeg tzdata openssl
     
     # (옵션) 비루트 사용자
     RUN addgroup -S app && adduser -S app -G app
