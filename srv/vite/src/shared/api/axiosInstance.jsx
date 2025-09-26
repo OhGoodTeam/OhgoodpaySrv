@@ -42,15 +42,18 @@ axiosInstance.interceptors.request.use(
 
     try {
       const token = await callToken();
+      console.log("API 요청 토큰 확인:", token ? "토큰 있음" : "토큰 없음");
+      console.log("API 요청 URL:", config.url);
 
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
+        console.log("Authorization 헤더 설정됨");
       } else {
         // 토큰이 없으면 로그만 출력하고 요청을 계속 진행
         // 서버에서 401을 반환하면 응답 인터셉터에서 처리
         console.warn("토큰이 없습니다. 서버에서 인증을 확인합니다.");
         if (window.location.pathname !== "/login") {
-          window.location.href = "/login"; // 로그인 페이지로 리디렉션
+          //window.location.href = "/login"; // 로그인 페이지로 리디렉션
         }
         return;
       }
