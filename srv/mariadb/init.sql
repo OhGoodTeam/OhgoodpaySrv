@@ -8,6 +8,14 @@ CREATE TABLE `grade` (
   PRIMARY KEY (`grade_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+INSERT INTO grade (grade_name, limit_price, point_percent, upgrade) VALUES
+('bronze', 0, 0.02, 100000),
+('silver', 100000, 0.06, 150000),
+('gold', 200000, 1.0, 200000),
+('platinum', 300000, 1.5, 250000),
+('diamond', 400000, 2.0, 300000);
+
+
 -- ohgoodpay.customer definition
 
 CREATE TABLE `customer` (
