@@ -5,6 +5,6 @@ FROM mariadb:11.4
 CMD ["mysqld", "--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci", "--max-connections=200"]
 
 # 초기화 SQL 폴더 복사 (컨테이너 최초 실행 시 적용됨)
-COPY ./init /docker-entrypoint-initdb.d
+COPY ./init.sql /docker-entrypoint-initdb.d
 
 EXPOSE 3306
