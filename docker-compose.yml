@@ -7,6 +7,7 @@ services:
       dockerfile: ./vite/Dockerfile.nginx
     ports:
       - "80:80" # HTTP로 접근
+      - "443:443" # HTTPS로 접근
     restart: unless-stopped
     logging:
       options: { max-size: "10m", max-file: "5" }

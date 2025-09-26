@@ -17,7 +17,7 @@ public class CorsConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(@org.springframework.lang.NonNull CorsRegistry registry) {
         registry.addMapping("/**")  // 모든 경로에 대해 CORS 허용
-                .allowedOrigins("http://localhost:5173", "http://127.0.0.1:5500", "http://localhost:8000")
+                .allowedOriginPatterns("*")  // 모든 도메인 허용 (프로덕션에서는 특정 도메인으로 제한)
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true)  // 인증 정보 포함 요청 허용
@@ -28,7 +28,7 @@ public class CorsConfig implements WebMvcConfigurer {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173", "http://127.0.0.1:5500", "http://localhost:8000"));
+        configuration.setAllowedOriginPatterns(Arrays.asList("*"));  // 모든 도메인 허용
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);  // 인증 정보 포함 요청 허용

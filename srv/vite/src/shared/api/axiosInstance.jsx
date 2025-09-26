@@ -2,8 +2,7 @@ import axios from "axios";
 import callToken from "../hook/callToken";
 
 const axiosInstance = axios.create({
-
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080",
+  baseURL: import.meta.env.VITE_API_URL || "", // 상대 경로로 변경
   timeout: 10000,
 
   headers: {
