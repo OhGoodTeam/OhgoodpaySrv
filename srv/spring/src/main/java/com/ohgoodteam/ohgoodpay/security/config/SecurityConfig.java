@@ -39,9 +39,10 @@ public class SecurityConfig {
 
         // 이미지 프록시 처리를 위해 "/api/image-proxy" 추가.
         // /swagger-ui/** 를 permitAll
+        // nginx가 정적 파일을 처리하므로 Spring Security에서는 API 경로만 관리
         http.authorizeHttpRequests(auth -> auth
             .requestMatchers("/auth/**", "/api/public/**","/ml/**", "/api/image-proxy/**").permitAll()
-                .requestMatchers("/swagger-ui/**", "/swagger-ui.html","/v3/api-docs/**", "/swagger-resources/**", "/webjars/**").permitAll()
+            .requestMatchers("/swagger-ui/**", "/swagger-ui.html","/v3/api-docs/**", "/swagger-resources/**", "/webjars/**").permitAll()
             .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()  // OPTIONS 요청 허용
             .anyRequest().authenticated());
         
