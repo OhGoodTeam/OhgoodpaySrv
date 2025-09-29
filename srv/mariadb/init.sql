@@ -166,13 +166,13 @@ CREATE TABLE `communication` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- Customer 데이터 (임의의 유저 3개)
-INSERT INTO customer (customer_id, name, email_id, pwd, birth, account, account_name, point, is_blocked, profile_img, nickname, introduce, score, hobby, is_extenstion, is_auto, grade_point, blocked_cnt, extension_cnt, join_date, grade_name, balance) 
+INSERT INTO customer (customer_id, name, email_id, pwd, birth, account, account_name, point, is_blocked, profile_img, nickname, introduce, score, hobby, is_extension, is_auto, grade_point, blocked_cnt, extension_cnt, join_date, grade_name, balance) 
 VALUES (1, '김민정', 'minjung@ohgood.com', '$2a$10$yNWl4fQ4VsazFy1tZutseeHlKEnVfD.YGbJ2tBkrjgP8TYIKAJaDy', '2000-07-26', '110123456789', '신한', 5000, false, 'profile1.jpg', '민정이', '안녕하세요!', 0, '독서,영화감상', false, false, 0, 0, 0, '2025-01-01 10:30:00', 'bronze', 100000);
 
-INSERT INTO customer (customer_id, name, email_id, pwd, birth, account, account_name, point, is_blocked, profile_img, nickname, introduce, score, hobby, is_extenstion, is_auto, grade_point, blocked_cnt, extension_cnt, join_date, grade_name, balance) 
+INSERT INTO customer (customer_id, name, email_id, pwd, birth, account, account_name, point, is_blocked, profile_img, nickname, introduce, score, hobby, is_extension, is_auto, grade_point, blocked_cnt, extension_cnt, join_date, grade_name, balance) 
 VALUES (2, '오가이', 'ohgai@ohgood.com', '$2a$10$yNWl4fQ4VsazFy1tZutseeHlKEnVfD.YGbJ2tBkrjgP8TYIKAJaDy', '1998-03-15', '110123456789', '국민', 5000, false, 'profile1.jpg', '가이', '안녕하세요!', 0, '독서,영화감상', false, false, 0, 0, 0, '2025-01-01 10:30:00', 'bronze', 100000);
 
-INSERT INTO customer (customer_id, name, email_id, pwd, birth, account, account_name, point, is_blocked, profile_img, nickname, introduce, score, hobby, is_extenstion, is_auto, grade_point, blocked_cnt, extension_cnt, join_date, grade_name, balance) 
+INSERT INTO customer (customer_id, name, email_id, pwd, birth, account, account_name, point, is_blocked, profile_img, nickname, introduce, score, hobby, is_extension, is_auto, grade_point, blocked_cnt, extension_cnt, join_date, grade_name, balance) 
 VALUES (3, '박은호', 'eunho@ohgood.com', '$2a$10$yNWl4fQ4VsazFy1tZutseeHlKEnVfD.YGbJ2tBkrjgP8TYIKAJaDy', '2001-12-15', '1101234562189', '토스', 5000, false, 'profile1.jpg', '은호', '안녕하세요!', 0, '독서,영화감상', false, false, 0, 0, 0, '2025-01-01 10:30:00', 'bronze', 100000);
 
 -- Payment Request 더미 데이터 (1월)
