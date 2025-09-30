@@ -2,6 +2,5 @@
 spring:
   data:
     redis:
-      host: ${REDIS_HOST:ohgoodteam.shinhanacademy.co.kr}
+      host: ${REDIS_HOST:redis}
       port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:ahfga10@^_!?}
