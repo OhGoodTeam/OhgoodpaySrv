@@ -39,8 +39,8 @@ public class FastApiClient {
 
     public FastApiClient() {
         this.restTemplate = new RestTemplate();
-        this.server = "http://localhost:";
-        this.baseUrl = "http://localhost:8000";
+        this.server = "https://ohgoodteam.shinhanacademy.co.kr";
+        this.baseUrl = "https://ohgoodteam.shinhanacademy.co.kr";
         this.serverPort = "8080";
     }
 
